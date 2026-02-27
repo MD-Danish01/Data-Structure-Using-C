@@ -6,195 +6,225 @@ for insertion, deletion (at beginning, end, and specific position), and traversa
 #include <stdio.h>
 #include <stdlib.h>
 
-/* ── Node structure ─────────────────────────────────────────────────────── */
-struct Node {
+struct node
+{
     int data;
-    struct Node *next;
+    struct node *next;
 };
 
-/* ── Utility: create a new node ─────────────────────────────────────────── */
-struct Node *createNode(int data) {
-    struct Node *newNode = (struct Node *)malloc(sizeof(struct Node));
-    if (!newNode) {
-        printf("Memory allocation failed.\n");
-        exit(1);
-    }
+struct node *createNode(int data)
+{
+    struct node *newNode = (struct node *)malloc(sizeof(struct node));
     newNode->data = data;
     newNode->next = NULL;
     return newNode;
 }
 
-/* ── Traversal ──────────────────────────────────────────────────────────── */
-void traverse(struct Node *head) {
-    if (!head) {
-        printf("List is empty.\n");
+void insertAtBeginning(struct node **list, int data)
+{
+    if (*list == NULL)
+    {
+        *list = createNode(data);
+    }
+    else
+    {
+        struct node *temp;
+        temp = createNode(data);
+        temp->next = *list;
+        *list = temp;
+    }
+}
+
+void insertAtEnd(struct node **list, int data)
+{
+    if (*list == NULL)
+    {
+        *list = createNode(data);
+    }
+    else
+    {
+        struct node *tail = *list;
+        while (tail->next != NULL)
+        {
+            tail = tail->next;
+        }
+        tail->next = createNode(data);
+    }
+}
+
+void insertAtSpecificPosition(struct node **list, int data, int position)
+{
+    if (*list == NULL)
+    {
+        printf("the list is not existing.");
         return;
     }
-    struct Node *temp = head;
-    printf("List: ");
-    while (temp) {
-        printf("%d", temp->data);
-        if (temp->next) printf(" -> ");
-        temp = temp->next;
+
+    if (position <= 0)
+    {
+        printf("positions are allways natural number\n");
     }
-    printf(" -> NULL\n");
+    else
+    {
+        struct node *ptr = *list;
+        // check if position is 1
+        if (position == 1)
+        {
+            *list = createNode(data);
+            (*list)->next = ptr;
+            return;
+        }
+        for (int i = 1; i < position - 1; i++)
+        {
+            if (ptr->next == NULL)
+            {
+                printf("position is greator than number of nodes in list.\n");
+                return;
+            }
+            ptr = ptr->next;
+        }
+
+        struct node *remainingList = ptr->next;
+        ptr->next = createNode(data);
+        ptr = ptr->next;
+        ptr->next = remainingList;
+    }
 }
 
-/* ── Insertion at the beginning ─────────────────────────────────────────── */
-struct Node *insertAtBeginning(struct Node *head, int data) {
-    struct Node *newNode = createNode(data);
-    newNode->next = head;
-    printf("Inserted %d at beginning.\n", data);
-    return newNode;
-}
-
-/* ── Insertion at the end ───────────────────────────────────────────────── */
-struct Node *insertAtEnd(struct Node *head, int data) {
-    struct Node *newNode = createNode(data);
-    if (!head) {
-        printf("Inserted %d at end (list was empty).\n", data);
-        return newNode;
+void deleteFromBeginning(struct node **list)
+{
+    struct node *temp = *list;
+    if (temp == NULL)
+    {
+        printf("list is empty.\n");
+        return;
     }
-    struct Node *temp = head;
-    while (temp->next)
-        temp = temp->next;
-    temp->next = newNode;
-    printf("Inserted %d at end.\n", data);
-    return head;
-}
-
-/* ── Insertion at a specific position (1-based) ─────────────────────────── */
-struct Node *insertAtPosition(struct Node *head, int data, int pos) {
-    if (pos <= 1)
-        return insertAtBeginning(head, data);
-
-    struct Node *newNode = createNode(data);
-    struct Node *temp = head;
-
-    for (int i = 1; i < pos - 1 && temp; i++)
-        temp = temp->next;
-
-    if (!temp) {
-        printf("Position %d out of range. Inserting at end instead.\n", pos);
-        /* reuse insertAtEnd logic */
-        struct Node *t = head;
-        if (!t) return newNode;
-        while (t->next) t = t->next;
-        t->next = newNode;
-        return head;
-    }
-
-    newNode->next = temp->next;
-    temp->next = newNode;
-    printf("Inserted %d at position %d.\n", data, pos);
-    return head;
-}
-
-/* ── Deletion at the beginning ──────────────────────────────────────────── */
-struct Node *deleteAtBeginning(struct Node *head) {
-    if (!head) {
-        printf("List is empty. Cannot delete.\n");
-        return NULL;
-    }
-    struct Node *temp = head;
-    head = head->next;
-    printf("Deleted %d from beginning.\n", temp->data);
+    *list = temp->next;
     free(temp);
-    return head;
 }
 
-/* ── Deletion at the end ────────────────────────────────────────────────── */
-struct Node *deleteAtEnd(struct Node *head) {
-    if (!head) {
-        printf("List is empty. Cannot delete.\n");
-        return NULL;
+void deleteFromEnd(struct node **list)
+{
+    struct node *ptr = *list;
+    if (ptr == NULL)
+    {
+        printf("list is empty.\n");
+        return;
     }
-    if (!head->next) {
-        printf("Deleted %d from end.\n", head->data);
-        free(head);
-        return NULL;
+    // check is there only one node
+    if (ptr->next == NULL)
+    {
+        free(ptr);
+        *list = NULL;
+        return;
     }
-    struct Node *temp = head;
-    while (temp->next->next)
-        temp = temp->next;
-    printf("Deleted %d from end.\n", temp->next->data);
-    free(temp->next);
-    temp->next = NULL;
-    return head;
+    while (1)
+    {
+        if ((ptr->next)->next == NULL)
+        {
+            break;
+        }
+        ptr = ptr->next;
+    }
+    free(ptr->next);
+    ptr->next = NULL;
 }
 
-/* ── Deletion at a specific position (1-based) ──────────────────────────── */
-struct Node *deleteAtPosition(struct Node *head, int pos) {
-    if (!head) {
-        printf("List is empty. Cannot delete.\n");
-        return NULL;
+void deleteFromSpecificPosition(struct node **list, int position)
+{
+    struct node *ptr = *list;
+    if (ptr == NULL)
+    {
+        printf("list is empty.\n");
+        return;
     }
-    if (pos <= 1)
-        return deleteAtBeginning(head);
-
-    struct Node *temp = head;
-    for (int i = 1; i < pos - 1 && temp->next; i++)
-        temp = temp->next;
-
-    if (!temp->next) {
-        printf("Position %d out of range. No deletion performed.\n", pos);
-        return head;
+    if (position <= 0)
+    {
+        printf("position should be natural number.\n");
+        return;
     }
 
-    struct Node *toDelete = temp->next;
-    temp->next = toDelete->next;
-    printf("Deleted %d from position %d.\n", toDelete->data, pos);
-    free(toDelete);
-    return head;
+    // check if position is 1
+    if (position == 1)
+    {
+        *list = ptr->next;
+        free(ptr);
+        return;
+    }
+
+    for (int i = 1; i < position - 1; i++)
+    {
+        if (ptr->next == NULL)
+        {
+            printf("position is greater than number of nodes in list.\n");
+            return;
+        }
+        ptr = ptr->next;
+    }
+    //edge case: when there is 1 node and position is 2
+    if (ptr->next == NULL)
+    {
+        printf("position is greater than number of nodes in list.\n");
+        return;
+    }
+
+    struct node *temp = ptr->next;
+    ptr->next = temp->next;
+    free(temp);
 }
 
-/* ── Free the entire list ───────────────────────────────────────────────── */
-void freeList(struct Node *head) {
-    struct Node *temp;
-    while (head) {
-        temp = head;
-        head = head->next;
-        free(temp);
+void displayList(struct node **list)
+{
+    if (*list == NULL)
+    {
+        printf("the list is not existing.");
+        return;
     }
+    struct node *ptr = *list;
+    while (ptr != NULL)
+    {
+        printf("%d", ptr->data);
+        ptr = ptr->next;
+        if (ptr != NULL)
+            printf(" -> ");
+    }
+    printf("\n");
 }
 
-/* ── Main ───────────────────────────────────────────────────────────────── */
-int main(void) {
-    struct Node *head = NULL;
+int main()
+{
+    struct node *head = NULL;
+    insertAtBeginning(&head, 50);
+    insertAtBeginning(&head, 40);
+    insertAtBeginning(&head, 30);
+    insertAtBeginning(&head, 20);
+    insertAtBeginning(&head, 10);
+    insertAtBeginning(&head, 0);
+    insertAtEnd(&head, 60);
+    insertAtEnd(&head, 70);
+    insertAtEnd(&head, 80);
+    insertAtEnd(&head, 90);
 
-    printf("=== Singly Linked List Operations ===\n\n");
+    displayList(&head);
 
-    /* --- Insertions --- */
-    printf("-- Insertion --\n");
-    head = insertAtEnd(head, 10);
-    head = insertAtEnd(head, 20);
-    head = insertAtEnd(head, 30);
-    head = insertAtEnd(head, 40);
-    traverse(head);
+    insertAtSpecificPosition(&head, 3, 3);
+    insertAtSpecificPosition(&head, 4, 4);
+    insertAtSpecificPosition(&head, 10, 10);
+    insertAtSpecificPosition(&head, 121, 11);
 
-    head = insertAtBeginning(head, 5);
-    traverse(head);
+    displayList(&head);
 
-    head = insertAtPosition(head, 25, 4);   /* insert 25 at position 4 */
-    traverse(head);
+    deleteFromBeginning(&head);
 
-    /* --- Deletions --- */
-    printf("\n-- Deletion at Beginning --\n");
-    head = deleteAtBeginning(head);
-    traverse(head);
+    displayList(&head);
 
-    printf("\n-- Deletion at End --\n");
-    head = deleteAtEnd(head);
-    traverse(head);
+    deleteFromEnd(&head);
 
-    printf("\n-- Deletion at Position 3 --\n");
-    head = deleteAtPosition(head, 3);
-    traverse(head);
+    displayList(&head);
 
-    printf("\n-- Deletion at Out-of-Range Position (10) --\n");
-    head = deleteAtPosition(head, 10);
-    traverse(head);
+    deleteFromSpecificPosition(&head, 9);
 
-    freeList(head);
+    displayList(&head);
+
     return 0;
 }
