@@ -1,3 +1,7 @@
+/*
+Write a C program to implement a circular queue using arrays and perform all basic queue
+operations with proper boundary conditions.
+*/
 #include <stdio.h>
 #define MAX 10
 
@@ -88,10 +92,10 @@ int main()
     enqueue(&q1, 100);
     enqueue(&q1, 110);
     enqueue(&q1, 120);
+    enqueue(&q1, 130);
 
     displayQueue(&q1);
-
-    enqueue(&q1, 130);
+    
     enqueue(&q1, 140);
 
     displayQueue(&q1);
